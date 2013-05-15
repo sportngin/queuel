@@ -4,7 +4,7 @@ shared_examples "an engine" do
   let(:queue_const) { Object.module_eval("#{described_class.to_s.split("::")[0..-2].join("::")}::Queue",__FILE__,__LINE__) }
 
   before do
-    subject.stub client_proper: client
+    subject.stub client_klass: client
   end
 
   it { should respond_to :queue }

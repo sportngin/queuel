@@ -1,12 +1,16 @@
 module Queuel
+  NoQueueGivenError = Class.new StandardError
   class Client
-    extend Forwardable
-    def_delegators :queue_connection, :push, :pop, :receive
-
     def initialize(engine, credentials, init_queue = nil)
       self.engine = engine
       self.credentials = credentials
       self.given_queue = init_queue
+    end
+
+    [:push, :pop, :receive].each do |operation|
+      define_method(operation) do |*args|
+        with_queue { queue_connection.public_send(operation, *args) }
+      end
     end
 
     def with(change_queue = nil)
@@ -22,6 +26,14 @@ module Queuel
     attr_accessor :given_queue
 
     private
+
+    def with_queue
+      if queue.nil? || queue.to_s.strip.empty?
+        raise NoQueueGivenError, "Must select a queue with #with or set a default_queue"
+      else
+        yield
+      end
+    end
 
     def queue_connection
       engine_client.queue queue

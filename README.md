@@ -92,6 +92,7 @@ message.delete    # => Delete the message
 
 * Implement AMQP
 * Configureable exponential back-off on `receive`
+* Configureable threading poller
 
 ## Contributing
 

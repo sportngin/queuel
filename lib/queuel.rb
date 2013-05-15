@@ -1,13 +1,22 @@
 require "queuel/version"
 require "forwardable"
-require "queuel/null/message"
+require "queuel/base_klass"
+
+require "queuel/base/engine"
+require "queuel/base/queue"
+require "queuel/base/message"
+require "queuel/base/poller"
+
 require "queuel/null/engine"
-require "queuel/null/poller"
 require "queuel/null/queue"
-require "queuel/iron_mq/message"
+require "queuel/null/message"
+require "queuel/null/poller"
+
 require "queuel/iron_mq/engine"
-require "queuel/iron_mq/poller"
 require "queuel/iron_mq/queue"
+require "queuel/iron_mq/message"
+require "queuel/iron_mq/poller"
+
 require "queuel/client"
 
 module Queuel

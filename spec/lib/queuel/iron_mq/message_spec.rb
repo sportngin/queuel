@@ -6,7 +6,7 @@ module Queuel
       describe "initialization with Iron Object" do
         let(:queue_double) { double "Queue" }
         let(:message_object) { double "IronMessage", id: 1, msg: "body", queue: queue_double }
-        subject { described_class.new_from_iron_mq_object(message_object) }
+        subject { described_class.new(message_object) }
 
         its(:id) { should == 1 }
         its(:body) { should == "body" }

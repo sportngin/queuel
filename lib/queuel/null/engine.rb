@@ -1,12 +1,8 @@
 module Queuel
   module Null
-    class Engine
-      def initialize(*)
-      end
-
-      def queue(*)
-        Queue.new
-      end
+    class Engine < Base::Engine
+      def client; end
+      def client_klass; end
     end
   end
 end

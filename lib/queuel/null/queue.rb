@@ -1,19 +1,12 @@
 require 'queuel/null/poller'
 module Queuel
   module Null
-    class Queue
-      def initialize(*)
-      end
-
-      # For IronMQ it should just be (message)
+    class Queue < Base::Queue
       def push(*)
       end
 
+      # Nullify
       def pop(*args, &block)
-      end
-
-      def receive(options = {}, &block)
-        Poller.new(options, block).poll
       end
     end
   end
