@@ -1,19 +1,23 @@
 module Queuel
   module Base
     class Queue
-      extend BaseKlass
+      extend Introspect
 
       def initialize(client, queue_name)
         self.client = client
         self.name = queue_name
       end
 
-      def push(*args)
+      def peek(options = {})
+        raise NotImplementedError, "must implement #peek"
+      end
+
+      def push(message)
         raise NotImplementedError, "must implement #push"
       end
 
-      def pop(*args, &block)
-        bare_message = pop_bare_message(*args)
+      def pop(options = {}, &block)
+        bare_message = pop_bare_message(options)
         unless bare_message.nil?
           build_new_message(bare_message).tap { |message|
             if block_given? && !message.nil?
@@ -25,14 +29,18 @@ module Queuel
       end
 
       def receive(options = {}, &block)
-        poller_klass.new(self, options, block).poll
+        poller_klass.new(thread_count, self, options, block).poll
       end
 
       private
       attr_accessor :client
       attr_accessor :name
 
-      def pop_bare_message(*args)
+      def thread_count
+        Queuel.receiver_threads || 1
+      end
+
+      def pop_bare_message(options = {})
         raise NotImplementedError, "must implement bare Message getter"
       end
 

@@ -11,6 +11,10 @@ module Queuel
       def default_options
         { n: 1 }
       end
+
+      def peek_options
+        { n: self.workers }
+      end
     end
   end
 end

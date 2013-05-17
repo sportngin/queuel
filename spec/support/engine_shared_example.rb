@@ -1,7 +1,9 @@
 shared_examples "an engine" do
   let(:client_object) { double "Client Object" }
   let(:client) { double "#{described_class.name} Client", new: client_object }
-  let(:queue_const) { Object.module_eval("#{described_class.to_s.split("::")[0..-2].join("::")}::Queue",__FILE__,__LINE__) }
+  let(:queue_const) do
+    Object.module_eval("#{described_class.to_s.split("::")[0..-2].join("::")}::Queue",__FILE__,__LINE__)
+  end
 
   before do
     subject.stub client_klass: client

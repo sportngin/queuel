@@ -1,15 +1,24 @@
 require 'queuel/iron_mq/poller'
+require 'queuel/base/queue'
+require 'forwardable'
 module Queuel
   module IronMq
     class Queue < Base::Queue
+      extend Forwardable
+      def_delegators :queue_connection, :peek
+
+      def peek(options = {})
+        Array(queue_connection.peek(options))
+      end
+
       # For IronMQ it should just be (message)
-      def push(*args)
-        queue_connection.post *args
+      def push(message)
+        queue_connection.post message
       end
 
       private
-      def pop_bare_message(*args)
-        queue_connection.get *args
+      def pop_bare_message(options = {})
+        queue_connection.get options
       end
 
       def queue_connection

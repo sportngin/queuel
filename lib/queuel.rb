@@ -1,6 +1,6 @@
 require "queuel/version"
 require "forwardable"
-require "queuel/base_klass"
+require "queuel/introspect"
 
 require "queuel/base/engine"
 require "queuel/base/queue"
@@ -20,16 +20,17 @@ require "queuel/iron_mq/poller"
 require "queuel/client"
 
 module Queuel
+  extend Introspect
   class << self
     extend Forwardable
     def_delegators :client, :push, :pop, :receive, :with
-    def_delegators :config, :credentials, :default_queue
+    def_delegators :config, :credentials, :default_queue, :receiver_threads
     alias << pop
   end
 
   def self.engine
     requires
-    Object.module_eval("::#{const_name}", __FILE__, __LINE__)
+    const_with_nesting const_name
   end
 
   def self.configure(&block)
@@ -60,18 +61,37 @@ module Queuel
   end
 
   class Configurator
-    def self.param(*params)
-      params.each do |name|
-        attr_accessor name
-        define_method name do |*values|
-          value = values.first
-          value ? self.send("#{name}=", value) : instance_variable_get("@#{name}")
+    private
+    attr_accessor :option_values
+
+    def self.option_values
+      @option_values ||= {}
+    end
+
+    def self.param(param_name, options = {})
+      attr_accessor param_name
+      self.option_values[param_name] = options
+      define_method param_name do |*values|
+        value = values.first
+        if value
+          self.send("#{param_name}=", value)
+        else
+          if instance_variable_defined?("@#{param_name}")
+            instance_variable_get("@#{param_name}")
+          else
+            self.class.option_values[param_name][:default]
+          end
         end
       end
+      public param_name
+      public "#{param_name}="
     end
+
+    public
 
     param :credentials
     param :engine
     param :default_queue
+    param :receiver_threads, default: 1
   end
 end

@@ -1,5 +1,5 @@
 module Queuel
-  module BaseKlass
+  module Introspect
     def module_names
       self.to_s.split("::")[0..-2].join("::")
     end

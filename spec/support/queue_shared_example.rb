@@ -10,6 +10,19 @@ shared_examples "a queue" do
   it { should respond_to :receive }
   it { should respond_to :push }
   it { should respond_to :pop }
+  it { should respond_to :peek }
+
+  describe "peek" do
+    before do
+      not_for_null do
+        client.stub queue: queue_object_with_message
+      end
+    end
+
+    it "should take options and return an array" do
+      subject.peek(option: true).should be_an Array
+    end
+  end
 
   describe "pop" do
     describe "with messages" do

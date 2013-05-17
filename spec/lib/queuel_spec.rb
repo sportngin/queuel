@@ -19,6 +19,10 @@ describe Queuel do
     it "set the credentials" do
       subject.config.credentials.should == { username: "jon" }
     end
+
+    it "has a default worker count" do
+      subject.config.receiver_threads.should == 1
+    end
   end
 
   describe "engine" do

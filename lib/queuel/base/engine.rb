@@ -1,7 +1,7 @@
 module Queuel
   module Base
     class Engine
-      extend BaseKlass
+      extend Introspect
       def self.inherited(klass)
         klass.class_eval do
           def queue_klass

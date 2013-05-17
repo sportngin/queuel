@@ -1,8 +1,9 @@
-require 'timeout'
+require 'thread/pool'
 module Queuel
   module Base
     class Poller
-      def initialize(queue, options, block)
+      def initialize(workers = 1, queue, options, block)
+        self.workers = workers
         self.queue = queue
         self.options = options || {}
         self.block = block
@@ -11,22 +12,16 @@ module Queuel
       end
 
       def poll
-        choose_looper do |msg|
-          if msg.nil?
-            tried
-            quit_looping! if break_if_nil? || maxed_tried?
-            sleep(sleep_time)
-          else
-            reset_tries
-            block.call msg
-            msg.delete
-          end
-          !msg.nil?
-        end
+        register_trappers
+        master = master_thread
+        master.join
+      rescue SignalException => e
+        shutdown
       end
 
       protected
       attr_accessor :tries
+      attr_accessor :workers
 
       private
       attr_accessor :queue
@@ -35,40 +30,88 @@ module Queuel
       attr_accessor :block
       attr_accessor :continue_looping
 
+      def register_trappers
+        trap(:SIGINT) { shutdown }
+      end
+
+      def shutdown
+        quit_looping!
+        master.kill
+        pool.shutdown
+      end
+
+      def pool
+        @pool ||= Thread.pool workers
+      end
+
+      def master_thread
+        Thread.new do
+          master_looper
+        end
+      end
+
+      def peek_options
+        {}
+      end
+
+      def peek
+        queue.peek peek_options
+      end
+
+      def queue_size # TODO optionize the peek options
+        Array(peek).size
+      end
+
+      def process_off_peek
+        mem_queue_size = queue_size
+        if mem_queue_size > 0
+          reset_tries
+          mem_queue_size.times do
+            process_on_thread
+          end
+        else
+          tried
+          quit_looping! if quit_on_empty?
+        end
+      end
+
+      def process_on_thread
+        pool.process do
+          process_message
+        end
+      end
+
+      def process_message
+        message = pop_new_message
+        message.delete if block.call message
+      rescue => e
+        puts e
+        puts e.backtrace.join "\n"
+      end
+
+      def master_looper
+        loop do
+          break unless continue_looping?
+          process_off_peek
+          sleep sleep_time
+        end
+      end
+
       def built_options
         raise NotImplementedError
-      end
-
-      def choose_looper(&loop_block)
-        timeout? ? timeout_looper(loop_block) : looper(loop_block)
-      end
-
-      def timeout_looper(loop_block)
-        Timeout.timeout(timeout) { looper(loop_block) }
-      rescue Timeout::Error
-        false
-      end
-
-      def looper(loop_block)
-        while continue_looping? do
-          loop_block.call(pop_new_message)
-        end
       end
 
       def continue_looping?
         !!continue_looping
       end
 
+      def break_if_nil?
+        !!options[:break_if_nil]
+      end
+      alias quit_on_empty? break_if_nil?
+
       def quit_looping!
         self.continue_looping = false
-      end
-
-      def timeout
-        options[:poll_timeout].to_i
-      end
-
-      def timeout?
-        timeout > 0
       end
 
       def pop_new_message
@@ -76,35 +119,23 @@ module Queuel
       end
 
       def start_sleep_time
+        0
+      end
+
+      def increment_sleep_time
         0.1
       end
 
       def sleep_time
-        tries < 30 ? (start_sleep_time * tries) : 3
+        tries < 30 ? ((start_sleep_time + increment_sleep_time) * tries) : 3
       end
 
       def reset_tries
         self.tries = 0
       end
 
-      def maxed_tried?
-        tries >= max_fails if max_fails_given?
-      end
-
-      def max_fails_given?
-        max_fails > 0
-      end
-
-      def max_fails
-        options[:max_consecutive_fails].to_i
-      end
-
       def tried
         self.tries += 1
-      end
-
-      def break_if_nil?
-        !!options.fetch(:break_if_nil, false)
       end
     end
   end

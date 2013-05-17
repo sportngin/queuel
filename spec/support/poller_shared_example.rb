@@ -1,50 +1,48 @@
 shared_examples "a poller" do
   let(:message) { double "message" }
-  let(:queue) { double "Queue" }
-  let(:block) { lambda{|m| } }
+  let(:queue) { double "Queue", peek: [] }
+  let(:block) { lambda{ |m| true } }
+  let(:thread_count) { 1 }
   let(:options) { {} }
 
   subject do
-    described_class.new queue, options, block
+    described_class.new thread_count, queue, options, block
   end
 
   it { should respond_to :poll }
 
-  describe "nil loops" do
-    describe "break on nil" do
+  describe "profiling", perf: true do
+    let(:magnitude) { 3000 }
+
+    before do
+      message.stub delete: true
+      subject.stub quit_on_empty?: true
+      subject.stub(:pop_new_message).and_return(*([message]*magnitude), nil)
+    end
+
+    describe "with 1 thread" do
+      let(:thread_count) { 1 }
       before do
-        subject.stub break_if_nil?: true
-        subject.stub sleep_time: 0
-        subject.stub pop_new_message: nil
+        queue.stub(:peek).and_return *([message] * magnitude), nil
       end
 
       it "can poll" do
-        subject.should_receive(:sleep).exactly(1).times
-        subject.poll
+        not_for_null do
+          subject.poll
+        end
       end
     end
 
-    describe "with max fails" do
+    describe "with 3 threads" do
+      let(:thread_count) { 3 }
       before do
-        subject.stub max_fails: 10
-        subject.stub(:pop_new_message).and_return(*([nil] * 15))
+        queue.stub(:peek).and_return *([message, message, message] * (magnitude/3)), nil
       end
 
       it "can poll" do
-        subject.should_receive(:sleep).exactly(10).times
-        subject.poll
-      end
-    end
-
-    describe "with timeout" do
-      before do
-        subject.stub timeout: 0.1
-        subject.stub(:pop_new_message).and_return(*([nil] * 1500))
-      end
-
-      it "can poll" do
-        subject.should_receive(:sleep).at_least(10).times
-        subject.poll
+        not_for_null do
+          subject.poll
+        end
       end
     end
   end
@@ -52,47 +50,15 @@ shared_examples "a poller" do
   describe "limited loops" do
     describe "with 2 yields, one nil" do
       before do
-        subject.stub break_if_nil?: true
-        subject.stub sleep_time: 0
+        subject.stub quit_on_empty?: true
+        queue.stub(:peek).and_return [message], nil
         subject.stub(:pop_new_message).and_return(message, nil)
       end
 
       it "can poll" do
         not_for_null do
-          block.should_receive(:call).once
+          block.should_receive(:call).once.and_return true
           message.should_receive(:delete)
-          subject.poll
-        end
-      end
-    end
-
-    describe "with timeout" do
-      before do
-        subject.stub timeout: 0.1
-        subject.stub(:pop_new_message).and_return(message, *([nil] * 1500))
-      end
-
-      it "can poll" do
-        not_for_null do
-          block.should_receive(:call).once
-          message.should_receive(:delete)
-          subject.should_receive(:sleep).at_least(10).times
-          subject.poll
-        end
-      end
-    end
-
-    describe "with max fails" do
-      before do
-        subject.stub max_fails: 10
-        subject.stub(:pop_new_message).and_return(message, *([nil] * 15))
-      end
-
-      it "can poll" do
-        not_for_null do
-          block.should_receive(:call).once
-          message.should_receive(:delete)
-          subject.should_receive(:sleep).exactly(10).times
           subject.poll
         end
       end

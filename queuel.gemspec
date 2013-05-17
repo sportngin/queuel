@@ -24,5 +24,13 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "simplecov"
   spec.add_development_dependency "iron_mq"
   spec.add_development_dependency "typhoeus"
+  spec.add_development_dependency "guard-bundler"
+  spec.add_development_dependency "guard-rspec"
+  spec.add_development_dependency "guard-cane"
+  spec.add_development_dependency "rb-inotify"
+  spec.add_development_dependency "rb-fsevent"
+  spec.add_development_dependency "rb-fchange"
+  spec.add_development_dependency "cane"
   spec.add_development_dependency "json", "~> 1.7.7"
+  spec.add_dependency "thread"
 end

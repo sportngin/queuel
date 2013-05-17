@@ -42,6 +42,10 @@ Queuel.configure do
 
   # currently only [:iron_mq, :null] available
   engine :iron_mq
+
+  # For Queuel.recevier {} you can configure more than one thread to
+  # handle incoming messages
+  receiver_threads 3 # default: 1
 end
 ```
 
@@ -50,7 +54,7 @@ end
 ### General Queue API
 
 ```ruby
-# Using default Queue
+# Using default Queue from config
 Queuel.pop
 Queuel.push "My message to you"
 Queuel.receive do |message|
@@ -64,21 +68,15 @@ Queuel.with("officials").receive do |message|
   puts "I received #{message.body}" # NOTE the message interface may change, this is currently not wrapped by the gem
 end
 
-# Timeout the receiving
-Queuel.receive poll_timeout: 60 do |message|
-  puts "I received #{message.body}" # NOTE the message interface may change, this is currently not wrapped by the gem
-end
-
-# Don't receive more than 10 nil messages
-Queuel.receive max_consecutive_fails: 10 do |message|
-  puts "I received #{message.body}" # NOTE the message interface may change, this is currently not wrapped by the gem
-end
-
 # Break on nil
 Queuel.receive break_if_nil: true do |message|
   puts "I received #{message.body}" # NOTE the message interface may change, this is currently not wrapped by the gem
 end
 ```
+
+#### Caveats of the receiver
+
+* Your block must return true in order to not replace the message to the Queue
 
 ### The message
 
@@ -92,7 +90,8 @@ message.delete    # => Delete the message
 
 * Implement AMQP
 * Configureable exponential back-off on `receive`
-* Configureable threading poller
+* Logger
+* Provide a Daemon
 
 ## Contributing
 
