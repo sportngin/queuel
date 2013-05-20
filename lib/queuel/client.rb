@@ -8,8 +8,8 @@ module Queuel
     end
 
     [:push, :pop, :receive].each do |operation|
-      define_method(operation) do |*args|
-        with_queue { queue_connection.public_send(operation, *args) }
+      define_method(operation) do |*args, &block|
+        with_queue { queue_connection.public_send(operation, *args, &block) }
       end
     end
 

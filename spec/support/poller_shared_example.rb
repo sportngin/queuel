@@ -6,7 +6,7 @@ shared_examples "a poller" do
   let(:options) { {} }
 
   subject do
-    described_class.new thread_count, queue, options, block
+    described_class.new queue, block, options, thread_count
   end
 
   it { should respond_to :poll }

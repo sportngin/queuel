@@ -29,7 +29,7 @@ module Queuel
       end
 
       def receive(options = {}, &block)
-        poller_klass.new(thread_count, self, options, block).poll
+        poller_klass.new(self, block, options, thread_count).poll
       end
 
       private

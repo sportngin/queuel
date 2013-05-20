@@ -10,7 +10,7 @@ module Queuel
         let(:queue) { double "Queue" }
         let(:options) { {} }
         let(:block) { double "Callable" }
-        subject { described_class.new queue, options, block }
+        subject { described_class.new queue, block, options }
 
         describe "its options" do
           its(:built_options) { should == { n: 1 } }
