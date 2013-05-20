@@ -1,8 +1,12 @@
 require 'thread'
-require 'thread/pool'
+require "thread/pool"
+require "forwardable"
 module Queuel
   module Base
     class Poller
+      extend Forwardable
+      def_delegators :Queuel, :logger
+
       def initialize(queue, param_block, options = {}, workers = 1)
         self.workers = workers
         self.queue = queue
@@ -14,10 +18,12 @@ module Queuel
 
       def poll
         register_trappers
+        logger.debug("Beginning Poll...")
         self.master = master_thread
-        master.join
+        log_action(:joining, :master) { master.join }
       rescue SignalException => e
-        shutdown
+        logger.warn "Caught (#{e}), shutting Poller down"
+        log_action(:killing, :poller, :warn) { shutdown }
       end
 
       protected
@@ -37,10 +43,18 @@ module Queuel
         trap(:INT) { shutdown }
       end
 
+      def log_action(verb, subject, level = :debug)
+        verb = verb.to_s.upcase.gsub(/\_/, " ")
+        subject = subject.to_s.upcase.gsub(/\_/, " ")
+        logger.public_send level, "#{verb} #{subject} START"
+        yield
+        logger.public_send level, "#{verb} #{subject} COMPLETE"
+      end
+
       def shutdown
-        pool.shutdown
-        master.kill
-        quit_looping!
+        log_action(:shutting_down, :thread_pool) { pool.shutdown }
+        log_action(:killing, :master_thread) { master.kill }
+        log_action(:killing, :loop) { quit_looping! }
       end
 
       def pool
@@ -89,7 +103,9 @@ module Queuel
         message = pop_new_message
         message.delete if self.inst_block.call message
       rescue => e
-        puts e
+        logger.warn "Received #{e} when processing #{message}"
+        logger.warn "Backtrace:"
+        logger.warn e.backtrace
       end
 
       def master_looper

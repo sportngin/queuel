@@ -1,5 +1,5 @@
 shared_examples "a queue" do
-  let(:message) { double "Message" }
+  let(:message) { double "Message", body: "uhuh" }
   let(:client) { double "ClientObject" }
   let(:name) { "venues queue" }
   subject do

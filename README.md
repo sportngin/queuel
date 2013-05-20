@@ -46,6 +46,12 @@ Queuel.configure do
   # For Queuel.recevier {} you can configure more than one thread to
   # handle incoming messages
   receiver_threads 3 # default: 1
+
+  # Logging: Default is MonoLogger, because its a non-blocking log-extension
+  # To the standard lib Logger. Any Log4r solution should work.
+  logger Logger # default: MonoLogger.new(STDOUT)
+
+  log_level MonoLogger::DEBUG # default: MonoLogger::ERROR # => 3
 end
 ```
 
@@ -90,7 +96,6 @@ message.delete    # => Delete the message
 
 * Implement AMQP
 * Configureable exponential back-off on `receive`
-* Logger
 * Provide a Daemon
 
 ## Contributing

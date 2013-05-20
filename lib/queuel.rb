@@ -1,5 +1,6 @@
 require "queuel/version"
 require "forwardable"
+require "queuel/configurator"
 require "queuel/introspect"
 
 require "queuel/base/engine"
@@ -30,7 +31,8 @@ module Queuel
 
   def self.engine
     requires
-    const_with_nesting const_name
+    warn_engine_selection
+    const_with_nesting engine_const_name
   end
 
   def self.configure(&block)
@@ -45,53 +47,45 @@ module Queuel
     Client.new engine, credentials
   end
 
+  def self.logger
+    config.logger.tap { |log|
+      log.level = config.log_level
+    }
+  end
+
+  private
+
+  def self.warn_engine_selection
+    @warned_null_engine ||= logger.warn(engine_config[:message])
+  end
+
+  def self.engine_config
+    engines.fetch(config.engine) { engines[:null] }
+  end
+
+  def self.configured_engine_name
+    engine_config[:const]
+  end
+
   def self.engines
     {
-      iron_mq: { require: 'iron_mq', const: "IronMq" },
-      null: { const: "Null" }
+      iron_mq: {
+        require: 'iron_mq',
+        const: "IronMq",
+        message: "Using IronMQ"
+      },
+      null: {
+        const: "Null",
+        message: "Using Null Engine, for compatability."
+      }
     }
   end
 
   def self.requires
-    require engines[config.engine][:require] if engines.fetch(config.engine, {})[:require]
+    require engine_config[:require] if engine_config[:require]
   end
 
-  def self.const_name
-    "Queuel::#{engines.fetch(config.engine, {}).fetch(:const, nil) || engines[:null][:const]}::Engine"
-  end
-
-  class Configurator
-    private
-    attr_accessor :option_values
-
-    def self.option_values
-      @option_values ||= {}
-    end
-
-    def self.param(param_name, options = {})
-      attr_accessor param_name
-      self.option_values[param_name] = options
-      define_method param_name do |*values|
-        value = values.first
-        if value
-          self.send("#{param_name}=", value)
-        else
-          if instance_variable_defined?("@#{param_name}")
-            instance_variable_get("@#{param_name}")
-          else
-            self.class.option_values[param_name][:default]
-          end
-        end
-      end
-      public param_name
-      public "#{param_name}="
-    end
-
-    public
-
-    param :credentials
-    param :engine
-    param :default_queue
-    param :receiver_threads, default: 1
+  def self.engine_const_name
+    "Queuel::#{configured_engine_name}::Engine"
   end
 end

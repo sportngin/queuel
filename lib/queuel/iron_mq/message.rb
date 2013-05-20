@@ -3,10 +3,13 @@ module Queuel
   module IronMq
     class Message < Base::Message
       extend Forwardable
-      def_delegators :message_object, :delete
 
       def body
-        @body || message_object && message_object.msg
+        @body || message_object && message_object.body
+      end
+
+      def delete
+        message_object.delete
       end
 
       [:id, :queue].each do |delegate|

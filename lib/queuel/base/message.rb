@@ -9,6 +9,15 @@ module Queuel
         raise NotImplementedError, "must define method #delete"
       end
 
+      def empty?
+        body.to_s.empty?
+      end
+      alias blank? empty?
+
+      def present?
+        !empty?
+      end
+
       attr_reader :id
       attr_reader :body
       attr_reader :queue
