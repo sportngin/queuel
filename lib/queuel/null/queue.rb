@@ -6,7 +6,7 @@ module Queuel
         []
       end
 
-      def push(message)
+      def push(message, options = {})
       end
 
       # Nullify

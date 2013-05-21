@@ -12,8 +12,8 @@ module Queuel
       end
 
       # For IronMQ it should just be (message)
-      def push(message)
-        queue_connection.post message
+      def push(message, options = {})
+        queue_connection.post build_push_message(message, options)
       end
 
       private

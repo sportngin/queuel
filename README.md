@@ -1,6 +1,7 @@
 # Queuel
 [![Gem Version](https://badge.fury.io/rb/queuel.png)](http://badge.fury.io/rb/queuel)
 [![Build Status](https://travis-ci.org/sportngin/queuel.png?branch=master)](https://travis-ci.org/sportngin/queuel)
+[![Code Climate](https://codeclimate.com/github/sportngin/queuel.png)](https://codeclimate.com/github/sportngin/queuel)
 
 Queuel is a kewl, lite wrapper around Queue interfaces. Currently it implements:
 
@@ -52,6 +53,13 @@ Queuel.configure do
   logger Logger # default: MonoLogger.new(STDOUT)
 
   log_level MonoLogger::DEBUG # default: MonoLogger::ERROR # => 3
+
+  # Incoming messages can be automatically encoded/decoded
+  decode_by_default false # default: true
+  decoder ->(body) { MultiJson.load body } # default: Queuel::Serialization::Json::Decoder
+
+  encode_by_default false # default: true
+  encoder ->(body) { body.to_s } # default: Queuel::Serialization::Json::Encoder
 end
 ```
 
@@ -88,15 +96,40 @@ end
 
 ```ruby
 message.id        # => ID of the message
-message.body      # => Message body
+message.raw_body  # => Raw Message body
+message.body      # => Message body (parsed, if configured to do so)
 message.delete    # => Delete the message
 ```
 
-## TODO
+#### Parsing
 
-* Implement AMQP
-* Configureable exponential back-off on `receive`
-* Provide a Daemon
+Queuel uses [MultiJson](https://github.com/intridea/multi_json) to provide
+some auto-message decoding/encodeing features. With MultiJson you may install your own engine
+(like [Oj](https://github.com/ohler55/oj)).
+
+Because of the parsing given, you will default to encoding and decoding JSON:
+
+```ruby
+Queuel.push username: "jon"
+Queuel.pop # => { username: "jon" }
+```
+
+You can configure your decoder/encoder on the fly:
+
+```ruby
+Queuel.push { username: "jon" }, encoder: ->(body) {  }
+Queuel.pop decoder: ->(raw) { }
+Queuel.receive decoder: ->(raw) { }
+```
+
+You can turn of encoding/decoding at calltime with:
+
+```ruby
+Queuel.push { username: "jon" }, encode: false
+Queuel.pop decode: false
+Queuel.receive decode: false
+```
+
 
 ## Contributing
 

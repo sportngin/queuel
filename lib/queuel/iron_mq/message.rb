@@ -1,11 +1,10 @@
-require 'forwardable'
 module Queuel
   module IronMq
     class Message < Base::Message
-      extend Forwardable
-
-      def body
-        @body || message_object && message_object.body
+      def raw_body
+        @raw_body ||
+          (message_object && message_object.body) ||
+          encoded_body
       end
 
       def delete

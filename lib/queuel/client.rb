@@ -7,7 +7,7 @@ module Queuel
       self.given_queue = init_queue
     end
 
-    [:push, :pop, :receive].each do |operation|
+    [:peek, :push, :pop, :receive].each do |operation|
       define_method(operation) do |*args, &block|
         with_queue { queue_connection.public_send(operation, *args, &block) }
       end

@@ -9,11 +9,12 @@ module Queuel
       @option_values ||= {}
     end
 
-    def self.define_param_accessors(param_name)
+    def self.define_param_accessors(param_name, boolean = false)
       define_method param_name do |*values|
         value = values.first
         value ? self.send("#{param_name}=", value) : retrieve(param_name)
       end
+      define_method("#{param_name}?") { !!retrieve(param_name) } if boolean
       define_method "#{param_name}=" do |value|
         validate!(param_name, value) &&
           instance_variable_set("@#{param_name}", value)
@@ -42,7 +43,7 @@ module Queuel
     def self.param(param_name, options = {})
       attr_accessor param_name
       self.option_values[param_name] = options
-      define_param_accessors param_name
+      define_param_accessors param_name, options[:boolean]
       public param_name
       public "#{param_name}="
     end
@@ -53,6 +54,17 @@ module Queuel
     param :engine
     param :default_queue
     param :receiver_threads, default: 1
+
+    param :decode_by_default, default: true, boolean: true
+    param :decoder, default: Queuel::Serialization::Json::Decoder, validate: {
+      validator: ->(encoder) { encoder.respond_to?(:call) }
+    }
+
+    param :encode_by_default, default: true, boolean: true
+    param :encoder, default: Queuel::Serialization::Json::Encoder, validate: {
+      validator: ->(encoder) { encoder.respond_to?(:call) }
+    }
+
     param :logger, default: MonoLogger.new(STDOUT), validate: {
       message: "Logger must respond to #{%w[info warn debug level level]}",
       validator: ->(logger) {

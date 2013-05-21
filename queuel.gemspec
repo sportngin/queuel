@@ -35,4 +35,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "thread"
   spec.add_dependency "mono_logger"
+  spec.add_dependency "multi_json"
 end
