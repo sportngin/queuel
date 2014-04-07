@@ -13,11 +13,32 @@ module Queuel
         before do
           subject.stub decode_body?: false
           message_object.stub(:as_sns_message).and_raise ::JSON::ParserError
+          Queuel.configure { engine :sqs }
         end
 
         its(:id) { should == 1 }
         its(:body) { should == "body" }
         its(:queue) { should == queue_double }
+
+        describe "when pulling an oversized message" do
+          let(:body) { '{"queuel_s3_object": "whatever" }' }
+
+          it "should call read_from_s3" do
+            subject.should_receive(:read_from_s3)
+            subject.raw_body
+          end
+        end
+
+        describe "when pushing an oversized json hash" do
+          before do
+            subject.send("message_object=", nil)
+            subject.stub(:encoded_body).and_return double("body", bytesize: subject.max_bytesize+1)
+          end
+          it "should call write_to_s3" do
+            subject.should_receive(:write_to_s3)
+            subject.raw_body
+          end
+        end
 
         describe "with json" do
           let(:body) { '{"username":"jon"}' }
@@ -30,14 +51,14 @@ module Queuel
         end
 
         describe "with valid SNS message" do
-          let(:sns_body) { "Hello From SNS"}
+          let(:sns_body) { "Hello From SNS" }
           before do
             message_object.stub(:as_sns_message).and_return double("SNSMessage", body: sns_body)
           end
           its(:raw_body) { should == sns_body }
           its(:raw_body) { should_not == message_object.body}
 
-          describe "that is json" do
+          describe "which is json" do
             let(:sns_body) { '{"username":"jon"}' }
             before do
               subject.stub decode_body?: true

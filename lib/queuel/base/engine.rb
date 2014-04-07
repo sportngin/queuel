@@ -12,6 +12,7 @@ module Queuel
 
       def initialize(credentials = {})
         self.credentials = credentials
+        self.bucket_name = credentials[:bucket_name]
         self.memoized_queues = {}
       end
 
@@ -21,6 +22,7 @@ module Queuel
 
       private
       attr_accessor :credentials
+      attr_accessor :bucket_name
       attr_accessor :memoized_queues
 
       def client

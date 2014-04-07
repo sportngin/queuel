@@ -89,6 +89,11 @@ Queuel.receive break_if_nil: true do |message|
 end
 ```
 
+Notes specific to the SQS engine:
+A config should be added to provide `bucket_name`, `max_bytesize`, `access_key`
+and `secret_access_key`. Without these, messages over the max_bytesize setting
+(defaults to 64kb) will be dropped from the queue.
+
 #### Caveats of the receiver
 
 * Your block must return true in order to not replace the message to the Queue
@@ -105,7 +110,7 @@ message.delete    # => Delete the message
 #### Parsing
 
 Queuel uses [MultiJson](https://github.com/intridea/multi_json) to provide
-some auto-message decoding/encodeing features. With MultiJson you may install your own engine
+some auto-message decoding/encoding features. With MultiJson you may install your own engine
 (like [Oj](https://github.com/ohler55/oj)).
 
 Because of the parsing given, you will default to encoding and decoding JSON:

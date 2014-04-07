@@ -7,7 +7,12 @@ module Queuel
 
       AWSSDKMissingError = Class.new(StandardError)
 
+      def queue(which_queue)
+        memoized_queues[which_queue.to_s] ||= queue_klass.new(client, which_queue, credentials)
+      end
+
       private
+
 
       def client_klass
         if defined?(::AWS::SQS)

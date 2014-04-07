@@ -8,7 +8,7 @@ module Queuel
 
       its(:thread_count) { should == 1 }
 
-      it "fails on non-impleneted push" do
+      it "fails on non-implemented push" do
         expect { subject.push("") }.to raise_error NotImplementedError
       end
 
