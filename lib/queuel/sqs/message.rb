@@ -2,33 +2,29 @@ module Queuel
   module SQS
     class Message < Base::Message
       # if message_object exists (not nil), receive the data, otherwise push
+      require 'json'
+
       def raw_body
         @raw_body ||= message_object.nil? ? push_message : pull_message
       end
 
-      def generate_key
-        key = [
-          (Time.now.to_f * 10000).to_i,
-          SecureRandom.urlsafe_base64,
-          Thread.current.object_id
-        ].join('-')
-        key
-      end
-
       def push_message
+        puts "in push message"
         if encoded_body.bytesize > max_bytesize
           key = generate_key
-          write_to_s3(encoded_body, key)
+          puts "sending to s3"
+          s3_transaction(:write, key, encoded_body)
           self.body = { 'queuel_s3_object' => key }
         end
         encoded_body
       end
 
       def pull_message
+        puts "in pull message"
         begin
-          decoded_body = JSON.parse(message_object.body)
+          decoded_body = JSON.parse(message_object)
           if decoded_body.key?('queuel_s3_object')
-            read_from_s3 decoded_body[:queuel_s3_object]
+            s3_transaction(:read, decoded_body[:queuel_s3_object])
           else
             message_object.body
           end
@@ -47,23 +43,32 @@ module Queuel
                   :secret_access_key => options[:secret_access_token] )
       end
 
-      def read_from_s3 key
-        object = s3.buckets[options[:bucket_name]].objects[key]
-        object.read
+      def s3
+        self.class.s3
       end
 
-      # this assumes you've set up some rules for file expiration on your
-      # configured bucket.
-      def write_to_s3(message, key)
-        begin
-          my_bucket = s3.buckets[options[:bucket_name]]
-          my_bucket.objects[key].write(message)
-        rescue
+      # @method - write or read
+      # @args - key and message if writing
+      def s3_transaction(method, *args)
+        bucket_name = options[:bucket_name]
+        raise NoBucketNameSupplied if bucket_name.nil?
+        my_bucket = s3.buckets[bucket_name]
+        if my_bucket.exists?
+          begin
+            send("s3_#{method}", my_bucket, *args)
+          rescue AWS::S3::Errors::AccessDenied => e
+            raise InsufficientPermissions, "Unable to read from bucket: #{e.message}"
+          end
+        else
           raise BucketDoesNotExistError, "Bucket has either expired or does not exist"
         end
       end
 
-      class BucketDoesNotExistError < StandardError
+      def s3_read(bucket, *args)
+        bucket.objects[args[0]].read
+      end
+      def s3_write(bucket, *args)
+        bucket.objects[args[0]].write(args[1])
       end
 
       def delete
@@ -76,6 +81,15 @@ module Queuel
         end
       end
 
+      def generate_key
+        key = [
+          (Time.now.to_f * 10000).to_i,
+          SecureRandom.urlsafe_base64,
+          Thread.current.object_id
+        ].join('-')
+        key
+      end
+
       def raw_body_with_sns_check
         begin
           message_object.as_sns_message.body
@@ -84,6 +98,15 @@ module Queuel
         end
       end
       private :raw_body_with_sns_check
+
+      class NoBucketNameSupplied < Exception
+      end
+
+      class InsufficientPermissions < StandardError
+      end
+
+      class BucketDoesNotExistError < StandardError
+      end
     end
   end
 end
