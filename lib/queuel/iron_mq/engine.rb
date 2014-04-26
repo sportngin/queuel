@@ -5,8 +5,6 @@ module Queuel
       extend Forwardable
       def_delegators :Queuel, :logger
 
-      IronMqMissingError = Class.new(StandardError)
-
       private
 
       def try_typhoeus
@@ -29,7 +27,7 @@ module Queuel
             ::IronMQ::Client
           rescue LoadError
             logger.error "Couldn't find iron_mq gem"
-            raise(IronMqMissingError)
+            raise(LibraryMissingError)
           end
         end
       end

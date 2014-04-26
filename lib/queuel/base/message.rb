@@ -91,7 +91,15 @@ module Queuel
       end
 
       def pull_message_body
-        raise NotImplementedError, "must define method #pull_message_body"
+        begin
+          decoded_body = decoder.call(message_object.body)
+          if decoded_body.key?(:queuel_s3_object)
+            return s3_transaction(:read, decoded_body[:queuel_s3_object])
+          end
+        rescue Queuel::Serialization::Json::SerializationError, TypeError
+          # do nothing
+        end
+        message_object.body
       end
 
       def s3

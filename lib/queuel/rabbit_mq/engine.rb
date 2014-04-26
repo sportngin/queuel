@@ -1,6 +1,6 @@
 require "forwardable"
 module Queuel
-  module SQS
+  module RabbitMq
     class Engine < Base::Engine
       extend Forwardable
       def_delegators :Queuel, :logger
@@ -12,7 +12,7 @@ module Queuel
       private
 
       def client_klass
-        try_load(::AWS::SQS, 'aws-sdk')
+        try_load(::AMQP::Channel, 'amqp')
       end
     end
   end

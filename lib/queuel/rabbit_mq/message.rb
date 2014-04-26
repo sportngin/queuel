@@ -1,5 +1,5 @@
 module Queuel
-  module IronMq
+  module RabbitMq
     class Message < Base::Message
       def raw_body
         @raw_body ||= message_object ? pull_message_body : push_message_body
@@ -8,6 +8,7 @@ module Queuel
       def delete
         message_object.delete
       end
+
 
       [:id, :queue].each do |delegate|
         define_method(delegate) do

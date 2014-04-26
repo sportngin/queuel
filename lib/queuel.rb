@@ -25,6 +25,11 @@ require "queuel/sqs/queue"
 require "queuel/sqs/message"
 require "queuel/sqs/poller"
 
+require "queuel/rabbit_mq/engine"
+require "queuel/rabbit_mq/queue"
+require "queuel/rabbit_mq/message"
+require "queuel/rabbit_mq/poller"
+
 require "queuel/sns/engine"
 require "queuel/sns/queue"
 
@@ -53,7 +58,7 @@ module Queuel
   end
 
   def self.configure(&block)
-    config.instance_eval &block
+    config.instance_eval(&block)
   end
 
   def self.config
@@ -90,6 +95,11 @@ module Queuel
         require: 'iron_mq',
         const: "IronMq",
         message: "Using IronMQ"
+      },
+      rabbit_mq: {
+        require: 'amqp',
+        const: "RabbitMq",
+        message: "Using RabbitMq"
       },
       sqs: {
         const: "SQS",

@@ -10,6 +10,7 @@ Queuel is a 'kewl', lite wrapper around Queue interfaces. Currently it implement
 
 * IronMQ
 * Amazon SQS
+* RabbitMQ
 * Null pattern
 
 Each of these should reliably implement:
@@ -50,7 +51,7 @@ Queuel.configure do
   # requirement depends on your Queue
   credentials token: 'asdufasdf8a7sd8fa7sdf', project_id: 'project_id'
 
-  # currently [:iron_mq, :sqs, :null] available
+  # currently [:iron_mq, :rabbit_mq, :sqs, :null] available
   engine :iron_mq
 
   # For Queuel.recevier {} you can configure more than one thread to

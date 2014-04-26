@@ -33,6 +33,8 @@ module Queuel
         raise NotImplementedError, "Must define a Queue class"
       end
 
+      LibraryMissingError = Class.new(StandardError)
+
       def try_load(klass, gem_name)
         if defined?(klass)
           klass
@@ -43,6 +45,7 @@ module Queuel
             klass
           rescue LoadError
             logger.error "Couldn't find #{gem_name} gem"
+            raise(LibraryMissingError)
           end
         end
       end
