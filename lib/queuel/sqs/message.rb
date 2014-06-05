@@ -47,8 +47,8 @@ module Queuel
 
       def s3
         @s3 ||= ::AWS::S3.new(
-                  :access_key_id => options[:s3_access_key_id],
-                  :secret_access_key => options[:s3_secret_access_key] )
+                  :access_key_id => options['s3_access_key_id'],
+                  :secret_access_key => options['s3_secret_access_key'] )
       end
       private :s3
 
