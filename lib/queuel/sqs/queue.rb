@@ -15,7 +15,7 @@ module Queuel
 
 
       def push(message, options = {})
-        built_message = build_push_message message, options.merge(credentials)
+        built_message = build_push_message message, credentials.merge(options)
         queue_connection.send_message built_message
       end
 
