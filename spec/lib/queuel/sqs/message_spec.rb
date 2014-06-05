@@ -65,6 +65,41 @@ module Queuel
             subject.send(:options=, {'s3_bucket_name' => 'test'})
             expect{ subject.send(:s3_transaction, 'read') }.to raise_error(AWS::Errors::MissingCredentialsError)
           end
+
+          context "with proper s3 credentials" do
+            let(:s3_mock) { double(:buckets => double(:[] => s3_bucket)) }
+            let(:s3_bucket) { double(:exists? => false) }
+
+            before(:each) do
+              s3_credentials = {
+                's3_bucket_name' => 'test',
+                's3_access_key_id' => 'foo',
+                's3_secret_access_key' => 'bar'
+              }
+              subject.send :options=, s3_credentials
+              subject.stub(:s3 => s3_mock)
+            end
+
+            context "with no bucket found" do
+              it "raises BucketDoesNotExistError" do
+                expect{ subject.send(:s3_transaction, 'read') }.to raise_error(Queuel::SQS::Message::BucketDoesNotExistError)
+              end
+            end
+
+            context "with a found bucket" do
+              let(:s3_bucket) { double(:exists? => true) }
+
+              it "passes if the s3 method works" do
+                subject.stub(:s3_read => true)
+                expect{ subject.send(:s3_transaction, 'read') }.to_not raise_error(Queuel::SQS::Message::InsufficientPermissions)
+              end
+
+              it "fails if s3 raises a AccessDenied error" do
+                subject.stub(:s3_read).and_raise(AWS::S3::Errors::AccessDenied)
+                expect{ subject.send(:s3_transaction, 'read') }.to raise_error(Queuel::SQS::Message::InsufficientPermissions)
+              end
+            end
+          end
         end
 
         describe "#s3" do
