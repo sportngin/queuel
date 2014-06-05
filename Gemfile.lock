@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    queuel (0.4.2)
+    queuel (0.4.3)
       mono_logger
       multi_json
       thread
