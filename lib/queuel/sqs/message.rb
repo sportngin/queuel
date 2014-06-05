@@ -55,7 +55,7 @@ module Queuel
       # @method - write or read
       # @args - key and message if writing
       def s3_transaction(method, *args)
-        bucket_name = options[:s3_bucket_name]
+        bucket_name = options['s3_bucket_name']
         raise NoBucketNameSupplied if bucket_name.nil?
         my_bucket = s3.buckets[bucket_name]
         if my_bucket.exists?

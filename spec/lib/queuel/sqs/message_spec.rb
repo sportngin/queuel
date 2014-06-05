@@ -51,6 +51,22 @@ module Queuel
           end
         end
 
+        describe "#s3_transaction" do
+          it "fails if the s3_bucket_name is not defined" do
+            expect{ subject.send(:s3_transaction, 'read') }.to raise_error(Queuel::SQS::Message::NoBucketNameSupplied)
+          end
+
+          it "fails if the s3_bucket_name is not a string key" do
+            subject.send(:options=, {:s3_bucket_name => 'test'})
+            expect{ subject.send(:s3_transaction, 'read') }.to raise_error(Queuel::SQS::Message::NoBucketNameSupplied)
+          end
+
+          it "fails without valid s3 creds" do
+            subject.send(:options=, {'s3_bucket_name' => 'test'})
+            expect{ subject.send(:s3_transaction, 'read') }.to raise_error(AWS::Errors::MissingCredentialsError)
+          end
+        end
+
         describe "#s3" do
           subject do
             described_class.new message_object, :s3_access_key_id => "stuff",
