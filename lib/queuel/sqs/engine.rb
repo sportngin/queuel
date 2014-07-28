@@ -13,20 +13,8 @@ module Queuel
 
       private
 
-
       def client_klass
-        if defined?(::AWS::SQS)
-          ::AWS::SQS
-        else
-          begin
-            logger.info "Loading AWS SDK..."
-            require 'aws-sdk'
-            ::AWS::SQS
-          rescue LoadError
-            logger.error "Couldn't find aws_sdk gem"
-            raise(AWSSDKMissingError)
-          end
-        end
+        try_load(::AWS::SQS, 'aws-sdk')
       end
     end
   end

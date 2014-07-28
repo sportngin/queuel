@@ -32,6 +32,21 @@ module Queuel
       def client_klass
         raise NotImplementedError, "Must define a Queue class"
       end
+
+      def try_load(klass, gem_name)
+        if defined?(klass)
+          klass
+        else
+          begin
+            logger.info "Loading #{klass}..."
+            require gem_name
+            klass
+          rescue LoadError
+            logger.error "Couldn't find #{gem_name} gem"
+          end
+        end
+      end
+
     end
   end
 end
