@@ -2,6 +2,8 @@ module Queuel
   module SQS
     class Message < Base::Message
 
+      MAX_KNOWN_BYTE_SIZE = 265
+
       def raw_body
         @raw_body ||= message_object ? pull_message : push_message
       end
@@ -41,7 +43,7 @@ module Queuel
       private :pull_message
 
       def max_bytesize
-        options[:max_bytesize] || 64 * 1024
+        options[:max_bytesize] || Queuel::SQS::Message::MAX_KNOWN_BYTE_SIZE * 1024
       end
       private :max_bytesize
 
