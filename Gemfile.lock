@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    queuel (0.4.5)
+    queuel (0.4.6)
       mono_logger
       multi_json
       thread
@@ -101,7 +101,7 @@ GEM
     spoon (0.0.4)
       ffi
     thor (0.18.1)
-    thread (0.1.4)
+    thread (0.2.2)
     typhoeus (0.6.3)
       ethon (~> 0.5.11)
 
@@ -129,4 +129,4 @@ DEPENDENCIES
   typhoeus
 
 BUNDLED WITH
-   1.10.3
+   1.10.6
