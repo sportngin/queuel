@@ -1,3 +1,3 @@
 module Queuel
-  VERSION = "2016.03.01.14.02"
+  VERSION = "0.4.7"
 end
