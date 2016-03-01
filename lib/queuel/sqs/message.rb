@@ -2,7 +2,7 @@ module Queuel
   module SQS
     class Message < Base::Message
 
-      MAX_KNOWN_BYTE_SIZE = 265
+      MAX_KNOWN_BYTE_SIZE = 256
 
       def raw_body
         @raw_body ||= message_object ? pull_message : push_message
