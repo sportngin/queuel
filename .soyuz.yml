@@ -1,0 +1,14 @@
+
+defaults:
+  deploy_cmd: gem push *.gem
+  before_deploy_cmds:
+    - op tag-release
+    - sed -i "" -e "s/\".*/\"$(git tag| sort -n -t. -k1,1 -k2,2 -k3,3 | tail -1 | sed s/v//)\"/" lib/queuel/version.rb
+    - git add  lib/queuel/version.rb
+    - git commit -m "Version Bump" && git push
+    - gem build queuel.gemspec
+  after_deploy_cmds:
+    - rm *.gem
+environments:
+  -
+    rubygems: {}
