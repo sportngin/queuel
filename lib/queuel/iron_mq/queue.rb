@@ -10,6 +10,9 @@ module Queuel
 
       def peek(options = {})
         Array(queue_connection.peek(options))
+      rescue Rest::HttpError => e
+        Queuel.logger.error(e.message)
+        return nil
       end
 
       # For IronMQ it should just be (message)
