@@ -1,0 +1,7 @@
+---
+### Copy this to spec/integration.yml and modify to enable integration tests
+engine: sqs
+queue: queuel_testing
+credentials:
+  access_key_id: YOUR_ACCESS_KEY
+  secret_access_key: YOUR_SECRET_KEY

@@ -27,6 +27,11 @@ RSpec.configure do |config|
     Queuel.configure { log_level 5 }
   end
 
+  config.include IntegrationHelpers, integration: true
+  unless File.exist?(File.expand_path('../integration.yml', __FILE__))
+    config.filter_run_excluding integration: true
+  end
+
   # Run specs in random order to surface order dependencies. If you find an
   # order dependency and want to debug it, you can fix the order by providing
   # the seed, which is printed after each run.

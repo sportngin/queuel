@@ -16,3 +16,4 @@ test/version_tmp
 tmp
 .rbx
 Gemfile.lock
+/spec/integration.yml
