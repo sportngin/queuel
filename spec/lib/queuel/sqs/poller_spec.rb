@@ -6,7 +6,7 @@ module Queuel
         it_should_behave_like "a poller"
       end
 
-      describe "specific to Iron MQ" do
+      describe "specific to SQS" do
         let(:queue) { double "Queue" }
         let(:options) { {} }
         let(:block) { double "Callable" }
