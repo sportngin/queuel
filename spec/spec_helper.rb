@@ -11,13 +11,18 @@ SimpleCov.start do
   add_filter '/spec/'
 end
 
+require 'rspec/its'
+
 require 'queuel'
 Dir["./spec/support/**/*.rb"].sort.each {|f| require f}
 RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
   config.filter_run_excluding :perf
+
+  config.mock_with(:rspec) { |c| c.syntax = [:expect, :should] }
+  config.expect_with(:rspec) { |c| c.syntax = [:expect, :should] }
+
   config.before do
     Queuel.configure { log_level 5 }
   end
