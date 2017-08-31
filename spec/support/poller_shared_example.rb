@@ -70,13 +70,14 @@ shared_examples "a poller" do
 
       it "can poll with poll limit" do
         not_for_null do
+          queue.stub(:peek).and_return [message, message], [message], nil
           queue.stub(:approximate_number_of_messages).and_return 2, 1, 0
           queue.stub(:max_pool_tasks).and_return 1
           block.should_receive(:call).once.and_return true
           message.should_receive(:delete)
           subject.should_receive(:increment_pool_task_count).at_least(1).times
           subject.should_receive(:decrement_pool_task_count).once
-          subject.poll
+          subject.send :process_off_peek
         end
       end
     end

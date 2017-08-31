@@ -85,6 +85,11 @@ module Queuel
 
       def process_off_peek
         mem_queue_size = queue_size
+
+        if queue.max_pool_tasks && mem_queue_size > queue.max_pool_tasks
+          mem_queue_size = queue.max_pool_tasks
+        end
+
         if mem_queue_size > 0
           reset_tries
           mem_queue_size.times do
@@ -98,11 +103,13 @@ module Queuel
       end
 
       def process_on_thread
-        return if pool_full?
-        increment_pool_task_count
         pool.process do
-          process_message
-          decrement_pool_task_count
+          begin
+            increment_pool_task_count
+            process_message
+          ensure
+            decrement_pool_task_count
+          end unless pool_full?
         end
       end
 
