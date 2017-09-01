@@ -27,6 +27,7 @@ require "queuel/sqs/poller"
 
 require "queuel/sns/engine"
 require "queuel/sns/queue"
+require "queuel/sns/message"
 
 require "queuel/client"
 
