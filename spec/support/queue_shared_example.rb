@@ -1,7 +1,4 @@
 shared_examples "a queue" do
-  let(:message) { double "Message", body: "uhuh" }
-  let(:client) { double "ClientObject" }
-  let(:name) { "venues queue" }
   subject do
     described_class.new client, name
   end
@@ -27,8 +24,7 @@ shared_examples "a queue" do
 
       it "should delete after block" do
         not_for_null do
-          message.should_receive(:delete)
-          subject.pop { |m| m }
+          subject.pop { |m| expect(m).to receive(:delete); true }
         end
       end
     end

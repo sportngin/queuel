@@ -35,7 +35,7 @@ RSpec.describe "Send/receive roundtrip test", integration: true do
       @initial_bucket_count = size
     end
 
-    it 'sends, stores to S3, receives, and deletes from S3', focus: true do
+    it 'sends, stores to S3, receives, and deletes from S3' do
       queue.push message
 
       sleep 0.1

@@ -2,13 +2,14 @@ require 'spec_helper'
 module Queuel
   module SQS
     describe Queue do
-      let(:message) { double "Message", body: "uhuh" }
+      let(:message) { double "Message", body: "uhuh", receipt_handle: "receipt" }
       let(:client) { double "Aws::SQS::Client" }
       let(:name) { "venues queue" }
 
       let(:client_with_message) do
         client.tap {|c|
           allow(c).to receive(:receive_message) { double "response", messages: [message] }
+          allow(c).to receive(:delete_message)
         }
       end
       let(:client_with_nil_message) do
