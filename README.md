@@ -27,7 +27,6 @@ your queuing:
 ```ruby
 gem 'iron_mq' # if using IronMQ
 gem 'aws-sdk' # if using Amazon SQS
-gem 'aws-sdk-v1' # if using Amazon SQS but you are already using AWS and need to continue using v2
 # IronMQ recommends `gem "typhoeus"` as well for some speed benefits
 gem 'queuel'
 ```
@@ -106,12 +105,13 @@ end
 Currently the SQS engine is the only engine with the s3 fallback support and
 takes the following keys:
 
+* `s3_region`
 * `s3_access_key_id`
 * `s3_secret_access_key`
 * `s3_bucket_name`
 * `max_bytesize` (optional)
 
-With these in place, messages over the `max_bytesize` (defaults to 64kb) will
+With these in place, messages over the `max_bytesize` (defaults to 256kb) will
 be sent to the designated bucket.  Without this in place, messages over SQS's
 limit be dropped from the queue.
 

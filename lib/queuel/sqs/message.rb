@@ -47,23 +47,30 @@ module Queuel
       end
       private :max_bytesize
 
+      private def s3_client_options
+        region = options[:s3_region] || options['s3_region'] || options[:region] || options['region']
+        access_key_id = options['s3_access_key_id'] || options[:s3_access_key_id] ||
+                        options['access_key_id'] || options[:access_key_id]
+        secret_access_key = options['s3_secret_access_key'] || options[:s3_secret_access_key] ||
+                            options['secret_access_key'] || options[:secret_access_key]
+        { region: region, credentials: Aws::Credentials.new(access_key_id, secret_access_key) }
+      end
+
       def s3
-        @s3 ||= ::AWS::S3.new(
-                  :access_key_id => options[:s3_access_key_id],
-                  :secret_access_key => options[:s3_secret_access_key] )
+        @s3 ||= ::Aws::S3::Resource.new(client: ::Aws::S3::Client.new(s3_client_options))
       end
       private :s3
 
       # @method - write or read
       # @args - key and message if writing
       def s3_transaction(method, *args)
-        bucket_name = options[:s3_bucket_name]
+        bucket_name = options[:s3_bucket_name] || options['s3_bucket_name']
         raise NoBucketNameSupplied if bucket_name.nil?
-        my_bucket = s3.buckets[bucket_name]
+        my_bucket = s3.bucket(bucket_name)
         if my_bucket.exists?
           begin
             send("s3_#{method}", my_bucket, *args)
-          rescue AWS::S3::Errors::AccessDenied => e
+          rescue Aws::S3::Errors::ServiceError => e
             raise InsufficientPermissions, "Unable to read from bucket: #{e.message}"
           end
         else
@@ -73,12 +80,12 @@ module Queuel
       private :s3_transaction
 
       def s3_read(bucket, *args)
-        bucket.objects[args[0]].read
+        bucket.object(args[0]).get.body.read
       end
       private :s3_read
 
       def s3_write(bucket, *args)
-        bucket.objects[args[0]].write(args[1])
+        bucket.object(args[0]).put(body: args[1])
       end
       private :s3_write
 

@@ -6,7 +6,7 @@ module Queuel
       subject { described_class.new :sqs }
 
       it "loads the class" do
-        subject.find.should eq(::AWS::SQS)
+        subject.find.should eq(::Aws::SQS)
       end
     end
   end

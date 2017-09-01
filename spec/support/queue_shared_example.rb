@@ -15,8 +15,7 @@ shared_examples "a queue" do
     describe "with messages" do
       before do
         not_for_null do
-          client.stub queue: queue_object_with_message
-          client.stub_chain :queues, named: queue_object_with_message
+          client_with_message
         end
       end
 
@@ -38,8 +37,7 @@ shared_examples "a queue" do
   describe "with nil message" do
     before do
       not_for_null do
-        client.stub queue: queue_object_with_nil_message
-        client.stub_chain :queues, named: queue_object_with_nil_message
+        client_with_nil_message
       end
     end
 
@@ -47,7 +45,7 @@ shared_examples "a queue" do
       subject.pop.should == nil
     end
 
-    it "should delete after bolck" do
+    it "should delete after block" do
       subject.pop { |m| m } # basically, don't error
     end
   end

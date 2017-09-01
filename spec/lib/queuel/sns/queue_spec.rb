@@ -2,9 +2,7 @@ require 'spec_helper'
 module Queuel
   module SNS
     describe Queue do
-      let(:queue_object_with_message) { double "QueueObject", get: message, peek: [message] }
-      let(:queue_object_with_nil_message) { double "QueueObject", get: nil, peek: nil }
-      let(:message) { double "Message", body: "uhuh" }
+      let(:message) { { 'message' => 'uhuh' } }
       let(:client) { double "ClientObject" }
       let(:name) { "venues queue" }
 
@@ -13,6 +11,12 @@ module Queuel
       end
 
       it { should respond_to :push }
+
+      it 'publishes a message to the client' do
+        expect(client).to receive(:publish).with(topic_arn: name, message: JSON[message])
+
+        subject.push message
+      end
     end
   end
 end

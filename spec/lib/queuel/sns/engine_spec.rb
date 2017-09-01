@@ -5,7 +5,7 @@ module Queuel
       it_should_behave_like "an engine"
 
       describe "getting SNS client" do
-        its(:client_klass) { should == ::AWS::SNS }
+        its(:client_klass) { should == ::Aws::SNS::Client }
       end
     end
   end

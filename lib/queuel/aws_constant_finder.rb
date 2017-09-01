@@ -23,22 +23,18 @@ module Queuel
         return fetch_const if supported_version?
       end
 
-      fetch_sdk 'aws-sdk-v1' do
-        return fetch_const
-      end
-
       fail!
     end
 
     def fail!
-      message = "Couldn't find any compatible aws-sdk gem, try installing aws-sdk-v1"
+      message = "Couldn't find any compatible aws-sdk gem, try installing aws-sdk"
       logger.error message
       raise(AWSSDKMissingError, message)
     end
     private :fail!
 
     def constants
-      ["AWS", klass_name]
+      ["Aws", klass_name]
     end
     private :constants
 
@@ -60,7 +56,7 @@ module Queuel
     private :fetch_sdk
 
     def supported_version?
-      ::AWS::VERSION.start_with?("1")
+      ::Aws::VERSION.start_with?("2")
     end
     private :supported_version?
   end

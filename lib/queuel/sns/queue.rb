@@ -6,14 +6,9 @@ module Queuel
       extend Forwardable
 
       def push(message, options = {})
-        queue_connection.publish build_push_message(message, options)
+        client.publish topic_arn: name, message: build_push_message(message, options)
       end
 
-      private
-
-      def queue_connection
-        @queue_connection ||= client.topics[name]
-      end
     end
   end
 end

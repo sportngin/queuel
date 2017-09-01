@@ -1,6 +1,5 @@
 require 'spec_helper'
-require 'json'
-require 'aws-sdk-v1'
+
 module Queuel
   module SQS
     describe Message do
@@ -53,13 +52,15 @@ module Queuel
 
         describe "#s3" do
           subject do
-            described_class.new message_object, :s3_access_key_id => "stuff",
+            described_class.new message_object, :s3_region => 'us-west-1',
+                                                :s3_access_key_id => "stuff",
                                                 :s3_secret_access_key => "derp"
           end
 
           it "sets the s3 object" do
-            AWS::S3.should_receive(:new).with(:access_key_id => "stuff", :secret_access_key => "derp")
-            subject.send :s3
+            s3 = subject.send :s3
+            expect(s3.client.config.region).to eq('us-west-1')
+            expect(s3.client.config.credentials.access_key_id).to eq("stuff")
           end
         end
 

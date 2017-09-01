@@ -5,7 +5,7 @@ module Queuel
       it_should_behave_like "an engine"
 
       describe "getting SQS client" do
-        its(:client_klass) { should == ::AWS::SQS }
+        its(:client_klass) { should == ::Aws::SQS::Client }
       end
     end
   end
