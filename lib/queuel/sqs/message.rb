@@ -43,7 +43,7 @@ module Queuel
       private :pull_message
 
       def max_bytesize
-        options[:max_bytesize] || Queuel::SQS::Message::MAX_KNOWN_BYTE_SIZE * 1024
+        options['max_bytesize'] || options[:max_bytesize] || Queuel::SQS::Message::MAX_KNOWN_BYTE_SIZE * 1024
       end
       private :max_bytesize
 

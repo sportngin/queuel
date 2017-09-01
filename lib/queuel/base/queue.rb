@@ -49,7 +49,7 @@ module Queuel
       end
 
       def build_push_message(message, options = {})
-        message_klass.new(nil, options).tap { |m|
+        build_new_message(nil, options).tap { |m|
           m.body = message
         }.raw_body
       end

@@ -5,6 +5,11 @@ module Queuel
     class Queue < Base::Queue
       extend Forwardable
 
+      def initialize(client, queue_name, engine_options = {})
+        super(client, queue_name)
+        @engine_options = engine_options
+      end
+
       def push(message, options = {})
         built_message = build_push_message message, options
         client.send_message queue_url: queue_url, message_body: built_message
@@ -20,9 +25,8 @@ module Queuel
       end
 
       private
-
       def build_new_message(bare_message, options = {})
-        message_klass.new(bare_message, options)
+        message_klass.new(bare_message, @engine_options.merge(options))
       end
 
       def pop_bare_message(options = {})

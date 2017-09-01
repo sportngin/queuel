@@ -6,7 +6,7 @@ module Queuel
       include AwsEngine
 
       def queue(which_queue)
-        memoized_queues[which_queue.to_s] ||= queue_klass.new(client, which_queue)
+        memoized_queues[which_queue.to_s] ||= queue_klass.new(client, which_queue, credentials)
       end
 
       private
