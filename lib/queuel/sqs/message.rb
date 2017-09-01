@@ -1,8 +1,7 @@
 module Queuel
   module SQS
     class Message < Base::Message
-
-      MAX_KNOWN_BYTE_SIZE = 256 * 1024
+      attr_reader :queue
 
       def initialize(message_object = nil, options = {})
         super
@@ -50,26 +49,17 @@ module Queuel
       end
 
       private def max_bytesize
-        options['max_bytesize'] || options[:max_bytesize] || MAX_KNOWN_BYTE_SIZE
-      end
-
-      private def s3_client_options
-        region = options[:s3_region] || options['s3_region'] || options[:region] || options['region']
-        access_key_id = options['s3_access_key_id'] || options[:s3_access_key_id] ||
-                        options['access_key_id'] || options[:access_key_id]
-        secret_access_key = options['s3_secret_access_key'] || options[:s3_secret_access_key] ||
-                            options['secret_access_key'] || options[:secret_access_key]
-        { region: region, credentials: Aws::Credentials.new(access_key_id, secret_access_key) }
+        queue ? queue.engine_config.max_bytesize : Queuel::AwsConfig::MAX_KNOWN_MESSAGE_SIZE
       end
 
       private def s3
-        @s3 ||= ::Aws::S3::Resource.new(client: ::Aws::S3::Client.new(s3_client_options))
+        @s3 ||= ::Aws::S3::Resource.new(client: ::Aws::S3::Client.new(queue.engine_config.s3_client_options))
       end
 
       # @method - write or read
       # @args - key and message if writing
       private def s3_transaction(method, *args)
-        bucket_name = options[:s3_bucket_name] || options['s3_bucket_name']
+        bucket_name = queue.engine_config.s3_bucket_name
         raise NoBucketNameSupplied if bucket_name.nil?
         my_bucket = s3.bucket(bucket_name)
         if my_bucket.exists?

@@ -5,17 +5,17 @@ RSpec.describe "Send/receive roundtrip test", integration: true do
   let(:message) { { message: "Sending: #{SecureRandom.hex(32)}" } }
 
   it 'sends and receives a message through the queue system' do
-    queue.push message
+    client.push message
 
-    sleep 0.1
+    sleep 0.5
 
     received_messages = []
-    queue.receive(break_if_nil: true) do |message|
+    client.receive(break_if_nil: true) do |message|
       received_messages << message.body
       true
     end
 
-    sleep 0.1
+    sleep 0.5
 
     expect(received_messages).to include(message)
   end
@@ -24,8 +24,8 @@ RSpec.describe "Send/receive roundtrip test", integration: true do
     let(:config) do
       super().tap {|c| c['credentials']['max_bytesize'] = 32 }
     end
-    let(:s3) { Queuel::SQS::Message.new(nil, config['credentials']).send(:s3) }
-    let(:bucket) { s3.bucket(config['credentials']['s3_bucket_name']) }
+    let(:s3) { Queuel::SQS::Message.new(nil, queue: queue).send(:s3) }
+    let(:bucket) { s3.bucket(queue.engine_config.s3_bucket_name) }
 
     def size
       bucket.objects.each.reduce(0) {|sum,_| sum+1}
@@ -36,19 +36,19 @@ RSpec.describe "Send/receive roundtrip test", integration: true do
     end
 
     it 'sends, stores to S3, receives, and deletes from S3' do
-      queue.push message
+      client.push message
 
-      sleep 0.1
+      sleep 0.5
 
       expect(size).to be > @initial_bucket_count
 
       received_messages = []
-      queue.receive(break_if_nil: true) do |message|
+      client.receive(break_if_nil: true) do |message|
         received_messages << message.body
         true
       end
 
-      sleep 0.1
+      sleep 0.5
 
       expect(received_messages).to include(message)
 

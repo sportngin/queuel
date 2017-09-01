@@ -51,10 +51,11 @@ module Queuel
         end
 
         describe "#s3" do
+          let(:engine_config) { Queuel::AwsConfig.new :s3_region => 'us-west-1',
+                                                      :s3_access_key_id => "stuff",
+                                                      :s3_secret_access_key => "derp"}
           subject do
-            described_class.new message_object, :s3_region => 'us-west-1',
-                                                :s3_access_key_id => "stuff",
-                                                :s3_secret_access_key => "derp"
+            described_class.new message_object, queue: double("queue", engine_config: engine_config)
           end
 
           it "sets the s3 object" do

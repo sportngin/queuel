@@ -5,9 +5,11 @@ module Queuel
     class Queue < Base::Queue
       extend Forwardable
 
-      def initialize(client, queue_name, engine_options = {})
+      attr_reader :engine_config
+
+      def initialize(client, queue_name, engine_config = nil)
         super(client, queue_name)
-        @engine_options = engine_options
+        @engine_config = engine_config
       end
 
       def push(message, options = {})
@@ -30,7 +32,7 @@ module Queuel
 
       private
       def build_new_message(bare_message, options = {})
-        message_klass.new(bare_message, @engine_options.merge(options).merge(queue: self))
+        message_klass.new(bare_message, options.merge(queue: self))
       end
 
       def pop_bare_message(options = {})
