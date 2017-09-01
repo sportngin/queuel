@@ -115,8 +115,7 @@ module Queuel
 
       def process_message
         register_trappers
-        message = pop_new_message
-        message.delete if self.inst_block.call message
+        pop_new_message
       rescue => e
         logger.warn "Received #{e} when processing #{message}"
         logger.warn "Backtrace:"
@@ -149,7 +148,7 @@ module Queuel
       end
 
       def pop_new_message
-        queue.pop built_options
+        queue.pop built_options, &inst_block
       end
 
       def start_sleep_time
