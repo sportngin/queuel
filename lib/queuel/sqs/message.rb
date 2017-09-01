@@ -2,14 +2,22 @@ module Queuel
   module SQS
     class Message < Base::Message
 
-      MAX_KNOWN_BYTE_SIZE = 256
+      MAX_KNOWN_BYTE_SIZE = 256 * 1024
+
+      def initialize(message_object = nil, options = {})
+        super
+        @queue = options.delete(:queue)
+      end
 
       def raw_body
         @raw_body ||= message_object ? pull_message : push_message
       end
 
       def delete
-        message_object.delete
+        @queue.delete message_object
+        if @queuel_s3_object
+          s3_transaction(:delete, @queuel_s3_object)
+        end
       end
 
       [:id, :queue].each do |delegate|
@@ -18,7 +26,7 @@ module Queuel
         end
       end
 
-      def push_message
+      private def push_message
         if encoded_body.bytesize > max_bytesize
           key = generate_key
           s3_transaction(:write, key, encoded_body)
@@ -26,13 +34,13 @@ module Queuel
         end
         encoded_body
       end
-      private :push_message
 
-      def pull_message
+      private def pull_message
         begin
           decoded_body = decoder.call(message_object.body)
           if decoded_body.key?(:queuel_s3_object)
-            s3_transaction(:read, decoded_body[:queuel_s3_object])
+            @queuel_s3_object = decoded_body[:queuel_s3_object]
+            s3_transaction(:read, @queuel_s3_object)
           else
             message_object.body
           end
@@ -40,12 +48,10 @@ module Queuel
           raw_body_with_sns_check
         end
       end
-      private :pull_message
 
-      def max_bytesize
-        options['max_bytesize'] || options[:max_bytesize] || Queuel::SQS::Message::MAX_KNOWN_BYTE_SIZE * 1024
+      private def max_bytesize
+        options['max_bytesize'] || options[:max_bytesize] || MAX_KNOWN_BYTE_SIZE
       end
-      private :max_bytesize
 
       private def s3_client_options
         region = options[:s3_region] || options['s3_region'] || options[:region] || options['region']
@@ -56,14 +62,13 @@ module Queuel
         { region: region, credentials: Aws::Credentials.new(access_key_id, secret_access_key) }
       end
 
-      def s3
+      private def s3
         @s3 ||= ::Aws::S3::Resource.new(client: ::Aws::S3::Client.new(s3_client_options))
       end
-      private :s3
 
       # @method - write or read
       # @args - key and message if writing
-      def s3_transaction(method, *args)
+      private def s3_transaction(method, *args)
         bucket_name = options[:s3_bucket_name] || options['s3_bucket_name']
         raise NoBucketNameSupplied if bucket_name.nil?
         my_bucket = s3.bucket(bucket_name)
@@ -77,17 +82,18 @@ module Queuel
           raise BucketDoesNotExistError, "Bucket has either expired or does not exist"
         end
       end
-      private :s3_transaction
 
-      def s3_read(bucket, *args)
+      private def s3_read(bucket, *args)
         bucket.object(args[0]).get.body.read
       end
-      private :s3_read
 
-      def s3_write(bucket, *args)
+      private def s3_write(bucket, *args)
         bucket.object(args[0]).put(body: args[1])
       end
-      private :s3_write
+
+      private def s3_delete(bucket, *args)
+        bucket.object(args[0]).delete
+      end
 
       def generate_key
         key = [

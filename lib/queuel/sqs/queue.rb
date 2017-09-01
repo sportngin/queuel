@@ -24,9 +24,13 @@ module Queuel
         approximate_number_of_messages
       end
 
+      def delete(message_object)
+        client.delete_message(queue_url: queue_url, receipt_handle: message_object.receipt_handle)
+      end
+
       private
       def build_new_message(bare_message, options = {})
-        message_klass.new(bare_message, @engine_options.merge(options))
+        message_klass.new(bare_message, @engine_options.merge(options).merge(queue: self))
       end
 
       def pop_bare_message(options = {})
