@@ -6,6 +6,6 @@ credentials:
   region: us-east-1
   access_key_id: YOUR_ACCESS_KEY
   secret_access_key: YOUR_SECRET_KEY
-  s3_bucket_name: your-bucket-name
+  s3_bucket_name: queuel-testing
   s3_access_key_id: YOUR_S3_ACCESS_KEY # if different from access_key_id
   s3_secret_access_key: YOUR_S3_SECRET_KEY # if different from secret_access_key
