@@ -28,13 +28,13 @@ module Queuel
 
       def message_attributes
         attributes.map do |k,v|
-          [k.to_s, {'string_value' => v.to_s, 'data_type' => 'String'}]
+          [k.to_s, {string_value: v.to_s, data_type: 'String'}]
         end.to_h
       end
 
       def message_attributes=(mattrs)
         mattrs.each do |k, att|
-          attributes[k] = att['string_value']
+          attributes[k] = att[:string_value]
         end
       end
 

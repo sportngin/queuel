@@ -2,22 +2,25 @@ require 'spec_helper'
 require 'securerandom'
 
 RSpec.describe "Send/receive roundtrip test", integration: true do
-  let(:message) { { message: "Sending: #{SecureRandom.hex(32)}" } }
+  let(:value) { SecureRandom.hex(32) }
+  let(:message) { { message: "Sending: #{value}" } }
+  let(:attributes) { { "value" => value } }
 
   it 'sends and receives a message through the queue system' do
-    client.push message
+    client.push message, attributes: attributes
 
     sleep 0.5
 
     received_messages = []
     client.receive(break_if_nil: true) do |message|
-      received_messages << message.body
+      received_messages << message
       true
     end
 
     sleep 0.5
 
-    expect(received_messages).to include(message)
+    expect(received_messages.map(&:body)).to include(message)
+    expect(received_messages.select{|m| m.attributes['value'] == value }).to_not be_empty
   end
 
   describe 'with max_bytesize to force message body to be stored to S3' do

@@ -53,7 +53,7 @@ module Queuel
       describe 'push with attributes' do
         it 'includes message attributes' do
           body  = '{"message":"hello"}'
-          attrs = { 'key' => { 'string_value' => 'value', 'data_type' => 'String' } }
+          attrs = { 'key' => { string_value: 'value', data_type: 'String' } }
 
           client.should_receive(:send_message).with(include(message_body: body, message_attributes: attrs))
 

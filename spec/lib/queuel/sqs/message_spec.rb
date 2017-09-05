@@ -99,8 +99,8 @@ module Queuel
 
       describe '#message_attributes' do
         let(:attributes) { { 'string_key' => 'hello', 'number_key' => 42 } }
-        let(:sqs_attributes) { { 'string_key' => { 'string_value' => 'hello', 'data_type' => 'String'},
-                                 'number_key' => { 'string_value' => '42',    'data_type' => 'String' } } }
+        let(:sqs_attributes) { { 'string_key' => { string_value: 'hello', data_type: 'String'},
+                                 'number_key' => { string_value: '42',    data_type: 'String' } } }
 
         let(:message_object) { double "SQSMessage" }
         let(:options) { { attributes: attributes } }
