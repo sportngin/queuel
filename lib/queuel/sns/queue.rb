@@ -6,7 +6,7 @@ module Queuel
       extend Forwardable
 
       def push(message, options = {})
-        client.publish topic_arn: name, message: build_push_message(message, options)
+        client.publish topic_arn: name, message: build_push_message(message, options).raw_body
       end
 
     end

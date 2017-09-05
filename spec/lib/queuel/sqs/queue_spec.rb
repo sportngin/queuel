@@ -19,7 +19,7 @@ module Queuel
       end
 
       subject do
-        described_class.new client, name
+        described_class.new client, name, AwsConfig.new({})
       end
 
       it_should_behave_like "a queue"
@@ -38,22 +38,14 @@ module Queuel
 
       describe "push" do
         before do
-          client.should_receive(:send_message).with(include(:queue_url, :message_body))
+          client.should_receive(:send_message).with(include(message_body: '"foobar"'))
         end
 
         it "receives a call to build message" do
-          subject.should_receive(:build_push_message)
-                 .with("foobar", {})
-                 .and_return('foobar')
-
           subject.push "foobar"
         end
 
         it "merges options that are passed in" do
-          subject.should_receive(:build_push_message)
-                 .with("foobar", {:foo => 'bar'})
-                 .and_return('foobar')
-
           subject.push "foobar", :foo => 'bar'
         end
       end

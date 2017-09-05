@@ -51,7 +51,7 @@ module Queuel
       def build_push_message(message, options = {})
         build_new_message(nil, options).tap { |m|
           m.body = message
-        }.raw_body
+        }
       end
 
       def thread_count

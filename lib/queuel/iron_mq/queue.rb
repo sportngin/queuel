@@ -14,7 +14,7 @@ module Queuel
 
       # For IronMQ it should just be (message)
       def push(message, options = {})
-        queue_connection.post build_push_message(message, options)
+        queue_connection.post build_push_message(message, options).raw_body
       end
 
       def size
