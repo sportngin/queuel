@@ -1,8 +1,6 @@
 module Queuel
   module SQS
     class Message < Base::Message
-      attr_reader :queue
-
       def initialize(message_object = nil, options = {})
         super
         @queue = options.delete(:queue)
@@ -22,6 +20,18 @@ module Queuel
       [:id, :queue].each do |delegate|
         define_method(delegate) do
           instance_variable_get("@#{delegate}") || message_object && message_object.public_send(delegate)
+        end
+      end
+
+      def message_attributes
+        attributes.map do |k,v|
+          [k.to_s, {'string_value' => v.to_s, 'data_type' => 'String'}]
+        end.to_h
+      end
+
+      def message_attributes=(mattrs)
+        mattrs.each do |k, att|
+          attributes[k] = att['string_value']
         end
       end
 

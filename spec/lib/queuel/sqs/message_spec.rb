@@ -8,7 +8,8 @@ module Queuel
         let(:queue_double) { double "Queue" }
         let(:body) { "body" }
         let(:message_object) { double "SQSMessage", id: 1, body: body, queue: queue_double }
-        subject { described_class.new(message_object) }
+        let(:options) { {} }
+        subject { described_class.new(message_object, options) }
 
         before do
           subject.stub decode_body?: false
@@ -93,6 +94,32 @@ module Queuel
             its(:body) { should == { username: "jon" } }
             its(:raw_body) { should == sns_body }
           end
+        end
+      end
+
+      describe '#message_attributes' do
+        let(:attributes) { { 'string_key' => 'hello', 'number_key' => 42 } }
+        let(:sqs_attributes) { { 'string_key' => { 'string_value' => 'hello', 'data_type' => 'String'},
+                                 'number_key' => { 'string_value' => '42',    'data_type' => 'String' } } }
+
+        let(:message_object) { double "SQSMessage" }
+        let(:options) { { attributes: attributes } }
+        subject { described_class.new(message_object, options) }
+
+        it { is_expected.to respond_to(:message_attributes) }
+
+        describe 'returns the SQS structures' do
+          its(:message_attributes) { are_expected.to eql(sqs_attributes) }
+        end
+
+        describe 'receives the SQS structures' do
+          let(:options) { {} }
+
+          before do
+            subject.message_attributes = sqs_attributes
+          end
+
+          its(:attributes) { are_expected.to eql(attributes.dup.tap {|a| a['number_key'] = a['number_key'].to_s }) }
         end
       end
 
