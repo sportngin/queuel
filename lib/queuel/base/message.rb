@@ -9,21 +9,20 @@ module Queuel
         :encode_by_default?
       attr_accessor :message_object
       attr_accessor :options
-      attr_writer :id
-      attr_writer :queue
+      attr_writer :id, :queue, :attributes
 
       public
 
-      attr_reader :id
+      attr_reader :id, :queue, :attributes
       attr_writer :body
       attr_accessor :raw_body
-      attr_reader :queue
 
       # @argument message_object
       # @argument options hash
       def initialize(message_object = nil, options = {})
         self.message_object = message_object
-        self.options = options
+        self.options        = options.reject {|k,v| k == :attributes }
+        self.attributes     = options[:attributes] || {}
       end
 
       def delete
