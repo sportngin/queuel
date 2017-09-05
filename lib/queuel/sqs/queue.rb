@@ -14,7 +14,9 @@ module Queuel
 
       def push(message, options = {})
         built_message = build_push_message message, options
-        client.send_message queue_url: queue_url, message_body: built_message.raw_body
+        client.send_message queue_url: queue_url,
+                            message_body: built_message.raw_body,
+                            message_attributes: built_message.message_attributes
       end
 
       def approximate_number_of_messages

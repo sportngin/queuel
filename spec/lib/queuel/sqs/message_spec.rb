@@ -7,7 +7,7 @@ module Queuel
       describe "initialization with SQS Object" do
         let(:queue_double) { double "Queue" }
         let(:body) { "body" }
-        let(:message_object) { double "SQSMessage", id: 1, body: body, queue: queue_double }
+        let(:message_object) { double "SQSMessage", id: 1, body: body, queue: queue_double, message_attributes: {} }
         let(:options) { {} }
         subject { described_class.new(message_object, options) }
 
@@ -114,10 +114,7 @@ module Queuel
 
         describe 'receives the SQS structures' do
           let(:options) { {} }
-
-          before do
-            subject.message_attributes = sqs_attributes
-          end
+          let(:message_object) { double "sqs message", body: "body", message_attributes: sqs_attributes }
 
           its(:attributes) { are_expected.to eql(attributes.dup.tap {|a| a['number_key'] = a['number_key'].to_s }) }
         end

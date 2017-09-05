@@ -2,7 +2,7 @@ require 'spec_helper'
 module Queuel
   module SQS
     describe Queue do
-      let(:message) { double "Message", body: "uhuh", receipt_handle: "receipt" }
+      let(:message) { double "Message", body: "uhuh", receipt_handle: "receipt", message_attributes: {} }
       let(:client) { double "Aws::SQS::Client" }
       let(:name) { "venues queue" }
 
@@ -47,6 +47,17 @@ module Queuel
 
         it "merges options that are passed in" do
           subject.push "foobar", :foo => 'bar'
+        end
+      end
+
+      describe 'push with attributes' do
+        it 'includes message attributes' do
+          body  = '{"message":"hello"}'
+          attrs = { 'key' => { 'string_value' => 'value', 'data_type' => 'String' } }
+
+          client.should_receive(:send_message).with(include(message_body: body, message_attributes: attrs))
+
+          subject.push({message: 'hello'}, attributes: {key: 'value'})
         end
       end
     end

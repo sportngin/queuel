@@ -4,6 +4,9 @@ module Queuel
       def initialize(message_object = nil, options = {})
         super
         @queue = options.delete(:queue)
+        if message_object.respond_to?(:message_attributes)
+          self.message_attributes = message_object.message_attributes
+        end
       end
 
       def raw_body
